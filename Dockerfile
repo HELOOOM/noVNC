@@ -1,9 +1,9 @@
-# Utilise une image de base légère avec Xfce et VNC
-FROM dorowu/ubuntu-desktop-lxde-vnc
+FROM ubuntu:20.04
 
-# Met à jour et installe les dépendances nécessaires
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Met à jour le système et installe les dépendances
+RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     novnc \
@@ -12,15 +12,19 @@ RUN apt-get update && \
     x11vnc \
     wget \
     supervisor \
-    net-tools \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    net-tools && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copie le projet noVNC dans le conteneur
-COPY . /app
-WORKDIR /app
+# Copie le script de lancement (tu dois avoir ce fichier dans ton repo)
+COPY utils/launch.sh /utils/launch.sh
+RUN chmod +x /utils/launch.sh
 
-# Ouvre le port standard pour VNC
-EXPOSE 8080
+# Dossier de travail
+WORKDIR /root
 
-# Commande de démarrage : lance noVNC
-CMD ["./utils/launch.sh", "--vnc", "localhost:5901"]
+# Expose le port VNC (port interne)
+EXPOSE 5901
+
+# Commande de démarrage
+CMD ["/utils/launch.sh", "--vnc", "localhost:5901"]
